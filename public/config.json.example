@@ -1,0 +1,9 @@
+{
+    "companyNamespace": "dm-pc",
+    "apiUrl": "http://dev.payments-api.hyphen.com/api/v1/",
+    "coreApiUrl": "http://dev.app-api.hyphen.com/api/v1/",
+    "coreUrl": "http://dev.app-ui.hyphen.com/",
+    "coreIframeUrl": "http://dev.app-ui.hyphen.com/iframe.html",
+    "companyId": "dd53b046-8242-4510-b3e6-d57d37b0fc60",
+    "applicationId": "d410f7bb-ffa3-4747-9818-21f181564c38"
+}

@@ -1,0 +1,96 @@
+pipelines:
+  default:
+    - step:
+        script:
+          - echo "We do nothing here now until tests are built"
+  tags:
+    '*':
+      - step:
+          image: node:lts
+          script:
+            - echo "Deploy $BITBUCKET_TAG to DR Environment"
+            - echo "Provide a build name in build_name.txt"
+            - echo "$BITBUCKET_TAG" > build_name.txt
+            - cat build_name.txt
+            - apt-get update
+            - echo "Install Zip"
+            - apt-get -qq install zip
+            - echo "Zip contents of this tag"
+            - zip tagged-payments-ui-source.zip -r * .[^.]*
+            - echo "Remove all files except ZIP Artifact"
+            - shopt -s extglob
+            - rm -rf ..?* .[!.]* !(*.zip)
+            # sync your files to S3
+            - pipe: atlassian/aws-s3-deploy:0.4.4
+              variables:
+                AWS_ACCESS_KEY_ID: $DR_AWS_KEY
+                AWS_SECRET_ACCESS_KEY: $DR_AWS_SECRET
+                AWS_DEFAULT_REGION: $DR_AWS_REGION
+                S3_BUCKET: $DR_AWS_S3_BUCKET
+                LOCAL_PATH: './'
+            - pipe: atlassian/slack-notify:1.0.0
+              variables:
+                WEBHOOK_URL: https://hooks.slack.com/services/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
+                MESSAGE: '"Payments UI \r\n Receiving tag: \r\n $BITBUCKET_TAG \r\n \r\n Sent to s3://$DR_AWS_S3_BUCKET/tagged-payments-ui-source.zip"'
+  custom:
+    Deploy to DR - TEST Environment:
+      - step:
+          name: Deploy to DR Test Environment
+          image: node:lts
+          deployment: Payments Test
+          script:
+            - echo "Deploy to DR Test Environment"
+            - echo "Provide a build name in build_name.txt"
+            - if [ ! -z "$BITBUCKET_TAG" ]; then echo "$BITBUCKET_TAG" > build_name.txt; else echo "${BITBUCKET_BRANCH////-}" > build_name.txt; fi
+            - cat build_name.txt
+            - apt-get update
+            - echo "Install Zip"
+            - apt-get -qq install zip
+            - echo "Zip contents of this branch"
+            - zip test-payments-ui-source.zip -r * .[^.]*
+            - echo "Remove all files except ZIP Artifact"
+            - shopt -s extglob
+            - rm -rf ..?* .[!.]* !(*.zip)
+            # sync your files to S3
+            - pipe: atlassian/aws-s3-deploy:0.4.4
+              variables:
+                AWS_ACCESS_KEY_ID: $DR_AWS_KEY
+                AWS_SECRET_ACCESS_KEY: $DR_AWS_SECRET
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                S3_BUCKET: $S3_BUCKET
+                LOCAL_PATH: './'
+            - pipe: atlassian/slack-notify:1.0.0
+              variables:
+                WEBHOOK_URL: https://hooks.slack.com/services/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
+                MESSAGE: '"Payments UI - TEST Environment \r\n Receiving... \r\n $BITBUCKET_BRANCH branch \r\n \r\n Sent to s3://$S3_BUCKET/test-payments-ui-source.zip"'
+    Deploy to DR - PROD Environment:
+      - step:
+          name: Deploy to DR Prod Environment
+          image: node:lts
+          deployment: Payments Prod
+          script:
+            - echo "Deploy to DR Production Environment"
+            - echo "Provide a build name in build_name.txt"
+            - if [ ! -z "$BITBUCKET_TAG" ]; then echo "$BITBUCKET_TAG" > build_name.txt; else echo "${BITBUCKET_BRANCH////-}" > build_name.txt; fi
+            - cat build_name.txt
+            - apt-get update
+            - echo "Install Zip"
+            - apt-get -qq install zip
+            - echo "Zip contents of this branch"
+            - zip prod-payments-ui-source.zip -r * .[^.]*
+            - echo "Remove all files except ZIP Artifact"
+            - shopt -s extglob
+            - rm -rf ..?* .[!.]* !(*.zip)
+            # sync your files to S3
+            - pipe: atlassian/aws-s3-deploy:0.4.4
+              variables:
+                AWS_ACCESS_KEY_ID: $DR_AWS_KEY
+                AWS_SECRET_ACCESS_KEY: $DR_AWS_SECRET
+                AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+                S3_BUCKET: $S3_BUCKET
+                LOCAL_PATH: './'
+            - pipe: atlassian/slack-notify:1.0.0
+              variables:
+                WEBHOOK_URL: https://hooks.slack.com/services/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
+                MESSAGE: '"Payments UI - PROD Environment \r\n Receiving... \r\n $BITBUCKET_BRANCH branch \r\n \r\n Sent to s3://$S3_BUCKET/prod-payments-ui-source.zip"'
+

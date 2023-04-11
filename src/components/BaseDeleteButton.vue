@@ -1,0 +1,10 @@
+<template>
+   <VBtn
+      @click="$emit('click')"
+      :color="$colorTheme.accentColor"
+      dark
+      icon
+   >
+      <VIcon>mdi-delete</VIcon>
+   </VBtn>
+</template>

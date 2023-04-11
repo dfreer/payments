@@ -1,0 +1,3 @@
+.v-label:not(.v-label--active) {
+   opacity: 0.5;
+}

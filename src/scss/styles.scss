@@ -1,0 +1,13 @@
+.v-snackbar-wrapper {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.v-snackbar-wrapper .v-snack {
+    position: static !important;
+    height: auto !important;
+    margin: 0;
+    padding: 0;
+}
